@@ -63,6 +63,7 @@ class AppStateController(application: Application) : AndroidViewModel(applicatio
     )
 
     init {
+        registry.wipeDatabase()
         syncData()
     }
 

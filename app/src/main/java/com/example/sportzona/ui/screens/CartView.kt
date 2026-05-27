@@ -22,7 +22,7 @@ import com.example.sportzona.viewmodel.AppStateController
 import com.example.sportzona.viewmodel.NavigationTarget
 
 @Composable
-fun CartOverview(controller: AppStateController) {
+fun CartView(controller: AppStateController) {
     val items = controller.currentCartEntries
     if (items.isEmpty()) {
         Column(modifier = Modifier.fillMaxSize()) {

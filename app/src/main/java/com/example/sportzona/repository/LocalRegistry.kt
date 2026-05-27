@@ -75,47 +75,55 @@ class LocalRegistry(context: Context) : SQLiteOpenHelper(context, DB_NAME, null,
     private fun initSeeds(db: SQLiteDatabase) {
         val seeds = listOf(
             ContentValues().apply {
-                put(COL_OFFER_TITLE, "Teretana Standard")
-                put(COL_OFFER_COST, 3500.00)
-                put(COL_OFFER_SLOTS, 15)
-                put(COL_OFFER_DAYS_STD, 3)
-                put(COL_OFFER_DAYS_PRM, 1)
-                put(COL_OFFER_LOCATION, "Beograd, Gym Fit")
-            },
-            ContentValues().apply {
-                put(COL_OFFER_TITLE, "Bazen Relax")
-                put(COL_OFFER_COST, 4200.00)
-                put(COL_OFFER_SLOTS, 8)
-                put(COL_OFFER_DAYS_STD, 5)
-                put(COL_OFFER_DAYS_PRM, 2)
-                put(COL_OFFER_LOCATION, "Novi Sad, AquaLife")
-            },
-            ContentValues().apply {
-                put(COL_OFFER_TITLE, "Tenis Pro")
-                put(COL_OFFER_COST, 6000.00)
-                put(COL_OFFER_SLOTS, 4)
-                put(COL_OFFER_DAYS_STD, 7)
-                put(COL_OFFER_DAYS_PRM, 3)
-                put(COL_OFFER_LOCATION, "Niš, Set & Match")
-            },
-            ContentValues().apply {
-                put(COL_OFFER_TITLE, "Zumba i Pilates")
-                put(COL_OFFER_COST, 3000.00)
-                put(COL_OFFER_SLOTS, 20)
-                put(COL_OFFER_DAYS_STD, 2)
-                put(COL_OFFER_DAYS_PRM, 1)
-                put(COL_OFFER_LOCATION, "Kragujevac, Body & Mind")
-            },
-            ContentValues().apply {
-                put(COL_OFFER_TITLE, "CrossFit Arena")
-                put(COL_OFFER_COST, 5000.00)
-                put(COL_OFFER_SLOTS, 10)
+                put(COL_OFFER_TITLE, "MMA i Kik-boks")
+                put(COL_OFFER_COST, 4800.00)
+                put(COL_OFFER_SLOTS, 12)
                 put(COL_OFFER_DAYS_STD, 4)
                 put(COL_OFFER_DAYS_PRM, 2)
-                put(COL_OFFER_LOCATION, "Beograd, Spartan")
+                put(COL_OFFER_LOCATION, "Beograd, Warrior Club")
+            },
+            ContentValues().apply {
+                put(COL_OFFER_TITLE, "Yoga i Meditacija")
+                put(COL_OFFER_COST, 3200.00)
+                put(COL_OFFER_SLOTS, 25)
+                put(COL_OFFER_DAYS_STD, 2)
+                put(COL_OFFER_DAYS_PRM, 1)
+                put(COL_OFFER_LOCATION, "Novi Sad, Zen Garden")
+            },
+            ContentValues().apply {
+                put(COL_OFFER_TITLE, "Plivanje za odrasle")
+                put(COL_OFFER_COST, 5500.00)
+                put(COL_OFFER_SLOTS, 6)
+                put(COL_OFFER_DAYS_STD, 6)
+                put(COL_OFFER_DAYS_PRM, 3)
+                put(COL_OFFER_LOCATION, "Kragujevac, Olimpik")
+            },
+            ContentValues().apply {
+                put(COL_OFFER_TITLE, "CrossFit Elite")
+                put(COL_OFFER_COST, 6200.00)
+                put(COL_OFFER_SLOTS, 10)
+                put(COL_OFFER_DAYS_STD, 5)
+                put(COL_OFFER_DAYS_PRM, 2)
+                put(COL_OFFER_LOCATION, "Beograd, Iron Gym")
+            },
+            ContentValues().apply {
+                put(COL_OFFER_TITLE, "Fudbal 5x5")
+                put(COL_OFFER_COST, 2500.00)
+                put(COL_OFFER_SLOTS, 14)
+                put(COL_OFFER_DAYS_STD, 3)
+                put(COL_OFFER_DAYS_PRM, 1)
+                put(COL_OFFER_LOCATION, "Niš, Sportski Centar Čair")
             }
         )
         seeds.forEach { db.insert(TBL_OFFER, null, it) }
+    }
+
+    fun wipeDatabase() {
+        val db = writableDatabase
+        db.execSQL("DROP TABLE IF EXISTS $TBL_RESERVATION")
+        db.execSQL("DROP TABLE IF EXISTS $TBL_OFFER")
+        db.execSQL("DROP TABLE IF EXISTS $TBL_CLIENT")
+        onCreate(db)
     }
 
     fun fetchUser(): UserAccount? {

@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.sportzona.ui.components.InfoHighlightCard
+import com.example.sportzona.ui.components.ScreenHeader
 import com.example.sportzona.viewmodel.AppStateController
 import com.example.sportzona.viewmodel.NavigationTarget
 
@@ -26,6 +27,9 @@ fun DetailsView(controller: AppStateController) {
     var amount by remember { mutableStateOf(1) }
     val ctx = LocalContext.current
 
+    val userCity = controller.currentUser.residenceCity
+    val isLocal = userCity.isNotBlank() && p.facilityInfo.lowercase().contains(userCity.lowercase())
+
     Column(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier.weight(1f),
@@ -34,26 +38,42 @@ fun DetailsView(controller: AppStateController) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
-                Surface(modifier = Modifier.fillMaxWidth().height(160.dp), shape = RoundedCornerShape(24.dp), color = MaterialTheme.colorScheme.primaryContainer) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Text(p.title, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onPrimaryContainer, textAlign = TextAlign.Center, modifier = Modifier.padding(horizontal = 24.dp))
-                    }
-                }
+                ScreenHeader(
+                    icon = Icons.Default.Info,
+                    title = p.title,
+                    subtitle = "Detaljne informacije o sportskom paketu"
+                )
             }
 
             item {
                 Column(modifier = Modifier.fillMaxWidth()) {
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                        Text(String.format("%.2f RSD", p.cost), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary)
-                        Surface(color = MaterialTheme.colorScheme.secondaryContainer, shape = CircleShape) {
-                            Text("${p.capacity} mesta", modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSecondaryContainer, fontWeight = FontWeight.Bold)
-                        }
-                    }
+                    Text(
+                        text = String.format("%.2f RSD", p.cost),
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
                     Spacer(Modifier.height(8.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.LocationOn, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
                         Spacer(Modifier.width(4.dp))
-                        Text(p.facilityInfo, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            text = if (isLocal) "${p.facilityInfo} (Lokalno)" else p.facilityInfo, 
+                            style = MaterialTheme.typography.bodyMedium, 
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontWeight = FontWeight.Normal
+                        )
+                    }
+                    Spacer(Modifier.height(4.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Groups, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
+                        Spacer(Modifier.width(4.dp))
+                        Text(
+                            text = "${p.capacity} slobodnih mesta",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontWeight = FontWeight.Normal
+                        )
                     }
                 }
             }
@@ -72,11 +92,21 @@ fun DetailsView(controller: AppStateController) {
                     Text("Rezervišite mesta", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, modifier = Modifier.fillMaxWidth())
                     Spacer(Modifier.height(16.dp))
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                        FilledTonalIconButton(onClick = { if (amount > 1) amount-- }, modifier = Modifier.size(48.dp), shape = RoundedCornerShape(12.dp)) {
+                        FilledTonalIconButton(
+                            onClick = { if (amount > 1) amount-- }, 
+                            modifier = Modifier.size(48.dp), 
+                            shape = RoundedCornerShape(12.dp),
+                            colors = IconButtonDefaults.filledTonalIconButtonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                        ) {
                             Icon(Icons.Default.KeyboardArrowLeft, null)
                         }
                         Text(amount.toString(), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                        FilledTonalIconButton(onClick = { if (amount < p.capacity) amount++ }, modifier = Modifier.size(48.dp), shape = RoundedCornerShape(12.dp)) {
+                        FilledTonalIconButton(
+                            onClick = { if (amount < p.capacity) amount++ }, 
+                            modifier = Modifier.size(48.dp), 
+                            shape = RoundedCornerShape(12.dp),
+                            colors = IconButtonDefaults.filledTonalIconButtonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                        ) {
                             Icon(Icons.Default.KeyboardArrowRight, null)
                         }
                     }

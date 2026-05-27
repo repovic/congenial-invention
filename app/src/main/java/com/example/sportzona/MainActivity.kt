@@ -44,25 +44,15 @@ fun PortalView(controller: AppStateController) {
     val target = controller.activeScreen
 
     Scaffold(
-        topBar = { PortalHeader(controller) },
-        floatingActionButton = {
-            if (target is NavigationTarget.Catalog) {
-                FloatingActionButton(
-                    onClick = { controller.jumpTo(NavigationTarget.Management(null)) },
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                    shape = RoundedCornerShape(16.dp)
-                ) { Icon(Icons.Default.Add, "Novi Paket") }
-            }
-        }
+        topBar = { PortalHeader(controller) }
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
             when (target) {
-                is NavigationTarget.UserSetup -> UserSetupView(controller)
+                is NavigationTarget.UserSetup -> ProfileView(controller)
                 is NavigationTarget.Catalog -> CatalogView(controller)
                 is NavigationTarget.Details -> DetailsView(controller)
                 is NavigationTarget.Management -> EditorView(controller, target.activityId)
-                is NavigationTarget.CartView -> CartOverview(controller)
+                is NavigationTarget.CartView -> CartView(controller)
                 is NavigationTarget.FinalizeOrder -> CheckoutView(controller)
             }
 
@@ -132,7 +122,6 @@ fun PortalHeader(controller: AppStateController) {
                     textAlign = TextAlign.Center
                 )
                 if (target is NavigationTarget.Catalog) {
-                    // Subtitle removed for cleaner look
                 }
             }
         },

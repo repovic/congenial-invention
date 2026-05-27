@@ -1,5 +1,6 @@
 package com.example.sportzona.ui.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -19,7 +20,7 @@ import com.example.sportzona.ui.components.InputWidget
 import com.example.sportzona.viewmodel.AppStateController
 
 @Composable
-fun UserSetupView(controller: AppStateController) {
+fun ProfileView(controller: AppStateController) {
     val profile = controller.currentUser
     var nameField by remember { mutableStateOf(profile.name) }
     var surnameField by remember { mutableStateOf(profile.surname) }
@@ -29,11 +30,11 @@ fun UserSetupView(controller: AppStateController) {
 
     val ready = nameField.isNotBlank() && surnameField.isNotBlank() && mailField.isNotBlank() && addrField.isNotBlank() && cityField.isNotBlank()
 
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
+    Column(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(top = 24.dp, bottom = 24.dp),
+            contentPadding = PaddingValues(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
@@ -51,13 +52,21 @@ fun UserSetupView(controller: AppStateController) {
             item { InputWidget(cityField, { cityField = it }, "Grad", Icons.Default.LocationOn) }
         }
 
-        Button(
-            onClick = { if (ready) controller.updateUser(nameField, surnameField, mailField, addrField, cityField) },
-            enabled = ready,
-            modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp).height(56.dp),
-            shape = RoundedCornerShape(12.dp)
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
         ) {
-            Text("SAČUVAJ I NASTAVI", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Button(
+                onClick = { if (ready) controller.updateUser(nameField, surnameField, mailField, addrField, cityField) },
+                enabled = ready,
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text("SAČUVAJ I NASTAVI", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            }
         }
     }
 }

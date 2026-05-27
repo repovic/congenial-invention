@@ -33,6 +33,8 @@ fun InputWidget(
         shape = RoundedCornerShape(12.dp),
         keyboardOptions = KeyboardOptions(keyboardType = inputMode),
         colors = OutlinedTextFieldDefaults.colors(
+            focusedContainerColor = MaterialTheme.colorScheme.surface,
+            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
             focusedBorderColor = MaterialTheme.colorScheme.primary,
             unfocusedBorderColor = MaterialTheme.colorScheme.outline
         )
@@ -98,7 +100,7 @@ fun ScreenHeader(
             textAlign = TextAlign.Center
         )
         Text(
-            text = subtitle,
+            text = if (subtitle.endsWith(".")) subtitle else "$subtitle.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center

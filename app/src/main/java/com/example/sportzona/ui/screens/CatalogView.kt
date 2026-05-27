@@ -27,23 +27,43 @@ fun CatalogView(controller: AppStateController) {
     val items = controller.availableActivities
     val userLoc = controller.currentUser.residenceCity
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        if (items.isEmpty()) {
-            EmptyPlaceholder(Icons.Default.Info, "Trenutno nema dostupnih paketa.\nDodajte novi paket pomoću dugmeta ispod.")
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                item {
-                    ScreenHeader(
-                        icon = Icons.Default.SportsScore,
-                        title = "Zdravo, ${controller.currentUser.name} 👋",
-                        subtitle = "Pogledajte dostupne sportske pakete."
-                    )
+    Column(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.weight(1f)) {
+            if (items.isEmpty()) {
+                EmptyPlaceholder(Icons.Default.Info, "Trenutno nema dostupnih paketa.\nDodajte novi paket pomoću dugmeta ispod.")
+            } else {
+                LazyColumn(mozemo li 
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    item {
+                        ScreenHeader(
+                            icon = Icons.Default.SportsScore,
+                            title = "Zdravo, ${controller.currentUser.name} 👋",
+                            subtitle = "Pogledajte dostupne sportske pakete."
+                        )
+                    }
+                    items(items) { p -> CatalogItem(p, userLoc, controller) }
                 }
-                items(items) { p -> CatalogItem(p, userLoc, controller) }
+            }
+        }
+        
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+        ) {
+            Button(
+                onClick = { controller.jumpTo(NavigationTarget.Management(null)) },
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Icon(Icons.Default.Add, null)
+                Spacer(Modifier.width(8.dp))
+                Text("DODAJ NOVI PAKET", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -63,15 +83,30 @@ fun CatalogItem(p: ActivityPackage, userLoc: String, controller: AppStateControl
             Text(p.title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Spacer(Modifier.height(4.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.LocationOn, null, modifier = Modifier.size(14.dp), tint = if (local) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
+                Icon(
+                    Icons.Default.LocationOn, 
+                    null, 
+                    modifier = Modifier.size(14.dp), 
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 Spacer(Modifier.width(4.dp))
-                Text(if (local) "${p.facilityInfo} (Lokalno)" else p.facilityInfo, style = MaterialTheme.typography.bodySmall, color = if (local) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = if (local) FontWeight.Bold else FontWeight.Normal)
+                Text(
+                    text = if (local) "${p.facilityInfo} (Lokalno)" else p.facilityInfo, 
+                    style = MaterialTheme.typography.bodySmall, 
+                    color = MaterialTheme.colorScheme.onSurfaceVariant, 
+                    fontWeight = FontWeight.Normal
+                )
             }
             Spacer(Modifier.height(4.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.Groups, null, modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.width(4.dp))
-                Text(text = "${p.capacity} slobodnih mesta", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Bold)
+                Text(
+                    text = "${p.capacity} slobodnih mesta", 
+                    style = MaterialTheme.typography.bodySmall, 
+                    color = MaterialTheme.colorScheme.onSurfaceVariant, 
+                    fontWeight = FontWeight.Normal
+                )
             }
             Spacer(Modifier.height(16.dp))
             Row(modifier = Modifier.fillMaxWidth().height(36.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
