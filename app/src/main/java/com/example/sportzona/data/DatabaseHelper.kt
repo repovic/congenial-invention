@@ -11,7 +11,6 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         private const val DATABASE_NAME = "sportzona.db"
         private const val DATABASE_VERSION = 1
 
-        // User table
         private const val TABLE_USER = "users"
         private const val KEY_USER_ID = "id"
         private const val KEY_USER_FIRST_NAME = "first_name"
@@ -20,7 +19,6 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         private const val KEY_USER_STREET = "street"
         private const val KEY_USER_CITY = "city"
 
-        // Packages table
         private const val TABLE_PACKAGES = "packages"
         private const val KEY_PKG_ID = "id"
         private const val KEY_PKG_NAME = "name"
@@ -30,7 +28,6 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         private const val KEY_PKG_PREMIUM_DAYS = "premium_days"
         private const val KEY_PKG_CITY_CENTER = "city_and_center"
 
-        // Cart table
         private const val TABLE_CART = "cart"
         private const val KEY_CART_ID = "id"
         private const val KEY_CART_PKG_ID = "package_id"
@@ -38,7 +35,6 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
     }
 
     override fun onCreate(db: SQLiteDatabase) {
-        // Create user table
         val createUserTable = ("CREATE TABLE $TABLE_USER (" +
                 "$KEY_USER_ID INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "$KEY_USER_FIRST_NAME TEXT," +
@@ -48,7 +44,6 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 "$KEY_USER_CITY TEXT)")
         db.execSQL(createUserTable)
 
-        // Create packages table
         val createPackagesTable = ("CREATE TABLE $TABLE_PACKAGES (" +
                 "$KEY_PKG_ID INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "$KEY_PKG_NAME TEXT," +
@@ -59,7 +54,6 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 "$KEY_PKG_CITY_CENTER TEXT)")
         db.execSQL(createPackagesTable)
 
-        // Create cart table
         val createCartTable = ("CREATE TABLE $TABLE_CART (" +
                 "$KEY_CART_ID INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "$KEY_CART_PKG_ID INTEGER," +
@@ -67,7 +61,6 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 "FOREIGN KEY($KEY_CART_PKG_ID) REFERENCES $TABLE_PACKAGES($KEY_PKG_ID) ON DELETE CASCADE)")
         db.execSQL(createCartTable)
 
-        // Populate initial sport packages
         populateInitialPackages(db)
     }
 
@@ -81,7 +74,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
     private fun populateInitialPackages(db: SQLiteDatabase) {
         val initialPackages = listOf(
             ContentValues().apply {
-                put(KEY_PKG_NAME, "Teretana Standard (Gym Fit, Beograd)")
+                put(KEY_PKG_NAME, "Teretana Standard")
                 put(KEY_PKG_PRICE, 3500.00)
                 put(KEY_PKG_SLOTS, 15)
                 put(KEY_PKG_STANDARD_DAYS, 3)
@@ -89,7 +82,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 put(KEY_PKG_CITY_CENTER, "Beograd, Gym Fit")
             },
             ContentValues().apply {
-                put(KEY_PKG_NAME, "Bazen Relax (AquaLife, Novi Sad)")
+                put(KEY_PKG_NAME, "Bazen Relax")
                 put(KEY_PKG_PRICE, 4200.00)
                 put(KEY_PKG_SLOTS, 8)
                 put(KEY_PKG_STANDARD_DAYS, 5)
@@ -97,7 +90,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 put(KEY_PKG_CITY_CENTER, "Novi Sad, AquaLife")
             },
             ContentValues().apply {
-                put(KEY_PKG_NAME, "Tenis Pro (Set & Match, Niš)")
+                put(KEY_PKG_NAME, "Tenis Pro")
                 put(KEY_PKG_PRICE, 6000.00)
                 put(KEY_PKG_SLOTS, 4)
                 put(KEY_PKG_STANDARD_DAYS, 7)
@@ -105,7 +98,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 put(KEY_PKG_CITY_CENTER, "Niš, Set & Match")
             },
             ContentValues().apply {
-                put(KEY_PKG_NAME, "Zumba i Pilates (Body & Mind, Kragujevac)")
+                put(KEY_PKG_NAME, "Zumba i Pilates")
                 put(KEY_PKG_PRICE, 3000.00)
                 put(KEY_PKG_SLOTS, 20)
                 put(KEY_PKG_STANDARD_DAYS, 2)
@@ -113,7 +106,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 put(KEY_PKG_CITY_CENTER, "Kragujevac, Body & Mind")
             },
             ContentValues().apply {
-                put(KEY_PKG_NAME, "CrossFit Arena (Spartan, Beograd)")
+                put(KEY_PKG_NAME, "CrossFit Arena")
                 put(KEY_PKG_PRICE, 5000.00)
                 put(KEY_PKG_SLOTS, 10)
                 put(KEY_PKG_STANDARD_DAYS, 4)
@@ -126,8 +119,6 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             db.insert(TABLE_PACKAGES, null, cv)
         }
     }
-
-    // --- USER OPERATIONS ---
 
     fun getUserProfile(): UserProfile? {
         val db = this.readableDatabase
@@ -163,8 +154,6 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             db.update(TABLE_USER, cv, "$KEY_USER_ID = ?", arrayOf(existingUser.id.toString()))
         }
     }
-
-    // --- SPORT PACKAGES OPERATIONS ---
 
     fun getAllPackages(): List<SportPackage> {
         val db = this.readableDatabase
@@ -229,12 +218,9 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         return db.update(TABLE_PACKAGES, cv, "$KEY_PKG_ID = ?", arrayOf(pkg.id.toString()))
     }
 
-    // --- CART OPERATIONS ---
-
     fun getCartItems(): List<CartItemWithPackage> {
         val db = this.readableDatabase
         val cartList = mutableListOf<CartItemWithPackage>()
-        // Simple join to fetch package details along with cart item
         val query = "SELECT c.$KEY_CART_ID AS cart_id, c.$KEY_CART_PKG_ID AS cart_pkg_id, c.$KEY_CART_QUANTITY AS cart_qty, " +
                 "p.$KEY_PKG_NAME, p.$KEY_PKG_PRICE, p.$KEY_PKG_SLOTS, p.$KEY_PKG_STANDARD_DAYS, p.$KEY_PKG_PREMIUM_DAYS, p.$KEY_PKG_CITY_CENTER " +
                 "FROM $TABLE_CART c INNER JOIN $TABLE_PACKAGES p ON c.$KEY_CART_PKG_ID = p.$KEY_PKG_ID"
@@ -265,10 +251,8 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     fun addToCart(packageId: Long, quantity: Int): Boolean {
         val db = this.writableDatabase
-        // Check if package exists and has enough slots
         val pkg = getPackageById(packageId) ?: return false
 
-        // Check if package is already in cart
         val cursor = db.query(TABLE_CART, null, "$KEY_CART_PKG_ID = ?", arrayOf(packageId.toString()), null, null, null)
         val exists = cursor.moveToFirst()
         var success = false
@@ -305,7 +289,6 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             return true
         }
         
-        // Find package associated with this cart item
         val query = "SELECT c.$KEY_CART_PKG_ID, p.$KEY_PKG_SLOTS FROM $TABLE_CART c " +
                 "INNER JOIN $TABLE_PACKAGES p ON c.$KEY_CART_PKG_ID = p.$KEY_PKG_ID WHERE c.$KEY_CART_ID = ?"
         val cursor = db.rawQuery(query, arrayOf(cartItemId.toString()))

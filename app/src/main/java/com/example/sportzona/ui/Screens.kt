@@ -28,14 +28,27 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.sportzona.data.SportPackage
 
-// --- MAIN NAV HOST ---
 @Composable
 fun SportZonaAppContent(viewModel: SportZonaViewModel) {
     val context = LocalContext.current
+    val screen = viewModel.currentScreen
 
     Scaffold(
         topBar = {
             SportZonaTopAppBar(viewModel = viewModel)
+        },
+        floatingActionButton = {
+            if (screen is Screen.PackageList) {
+                FloatingActionButton(
+                    onClick = { viewModel.navigateTo(Screen.AddEditPackage(null)) },
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    shape = RoundedCornerShape(16.dp),
+                    elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp, 0.dp, 0.dp)
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Dodaj Paket")
+                }
+            }
         }
     ) { innerPadding ->
         Box(
@@ -43,7 +56,7 @@ fun SportZonaAppContent(viewModel: SportZonaViewModel) {
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            when (val screen = viewModel.currentScreen) {
+            when (screen) {
                 is Screen.UserProfile -> UserProfileScreen(viewModel)
                 is Screen.PackageList -> PackageListScreen(viewModel)
                 is Screen.PackageDetail -> PackageDetailScreen(viewModel, screen.packageId)
@@ -52,46 +65,79 @@ fun SportZonaAppContent(viewModel: SportZonaViewModel) {
                 is Screen.Checkout -> CheckoutScreen(viewModel)
             }
 
-            // Global Confirmation Dialog
             if (viewModel.showOrderConfirmationDialog && viewModel.orderDialogInfo != null) {
                 val info = viewModel.orderDialogInfo!!
                 AlertDialog(
                     onDismissRequest = { },
-                    containerColor = Color.White,
-                    icon = { Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF2E7D32), modifier = Modifier.size(48.dp)) },
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    tonalElevation = 0.dp,
+                    icon = { 
+                        Surface(
+                            shape = CircleShape,
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            modifier = Modifier.size(72.dp),
+                            tonalElevation = 0.dp
+                        ) {
+                            Icon(
+                                Icons.Default.CheckCircle, 
+                                contentDescription = null, 
+                                tint = MaterialTheme.colorScheme.primary, 
+                                modifier = Modifier.padding(16.dp)
+                            ) 
+                        }
+                    },
                     title = {
-                        Text("Rezervacija uspešna!", fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+                        Text(
+                            "Uspešna Rezervacija!", 
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold, 
+                            textAlign = TextAlign.Center, 
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     },
                     text = {
-                        Column(verticalArrangement = Arrangement.spacedBy(12.dp), horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-                            Text("Vaša članska kartica je spremna za preuzimanje.", fontWeight = FontWeight.Medium, textAlign = TextAlign.Center)
-                            HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f))
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(16.dp), 
+                            horizontalAlignment = Alignment.CenterHorizontally, 
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                "Vaša porudžbina je primljena. Detalji su prikazani ispod.", 
+                                style = MaterialTheme.typography.bodyMedium,
+                                textAlign = TextAlign.Center,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                             
-                            Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                                    Text("Adresa:", fontSize = 13.sp, color = Color.Gray)
-                                    Text(info.address, fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                                }
-                                Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                                    Text("Dostupno za:", fontSize = 13.sp, color = Color.Gray)
-                                    Text("${info.waitingDays} dana", fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
+                                shape = RoundedCornerShape(12.dp),
+                                elevation = CardDefaults.cardElevation(0.dp)
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    InfoRow("Adresa dostave:", info.address)
+                                    InfoRow("Prvi termin:", "${info.waitingDays} dana")
                                 }
                             }
 
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(Color.Black)
-                                    .padding(12.dp),
-                                contentAlignment = Alignment.Center
+                            Surface(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(12.dp),
+                                color = MaterialTheme.colorScheme.primary,
+                                tonalElevation = 0.dp
                             ) {
-                                Text(
-                                    "Ukupno: ${String.format("%.2f RSD", info.finalPrice)}",
-                                    fontWeight = FontWeight.ExtraBold,
-                                    color = Color.White,
-                                    fontSize = 18.sp
-                                )
+                                Column(
+                                    modifier = Modifier.padding(16.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text("Ukupno za uplatu:", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f))
+                                    Text(
+                                        String.format("%.2f RSD", info.finalPrice),
+                                        style = MaterialTheme.typography.headlineMedium,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = MaterialTheme.colorScheme.onPrimary
+                                    )
+                                }
                             }
                         }
                     },
@@ -99,13 +145,13 @@ fun SportZonaAppContent(viewModel: SportZonaViewModel) {
                         Button(
                             onClick = {
                                 viewModel.dismissOrderDialogAndClearCart()
-                                Toast.makeText(context, "Hvala na poverenju!", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Hvala na poverenju!", Toast.LENGTH_LONG).show()
                             },
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(0.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                            shape = RoundedCornerShape(12.dp),
+                            elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp, 0.dp)
                         ) {
-                            Text("ZAVRŠI", fontWeight = FontWeight.ExtraBold)
+                            Text("ZATVORI", fontWeight = FontWeight.Bold)
                         }
                     }
                 )
@@ -114,27 +160,43 @@ fun SportZonaAppContent(viewModel: SportZonaViewModel) {
     }
 }
 
-// --- SHARED TOP BAR ---
+@Composable
+fun InfoRow(label: String, value: String) {
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(value, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, textAlign = TextAlign.End, modifier = Modifier.weight(1f).padding(start = 8.dp))
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SportZonaTopAppBar(viewModel: SportZonaViewModel) {
     val screen = viewModel.currentScreen
     val cartCount = viewModel.cartItems.sumOf { it.cartItem.quantity }
 
-    CenterAlignedTopAppBar(
+    TopAppBar(
         title = {
-            Text(
-                text = when (screen) {
-                    is Screen.UserProfile -> "Korisnički Profil"
-                    is Screen.PackageList -> "SportZona"
-                    is Screen.PackageDetail -> "Detalji Paketa"
-                    is Screen.AddEditPackage -> if (screen.packageId == null) "Novi Paket" else "Izmeni Paket"
-                    is Screen.Cart -> "Korpa Rezervacija"
-                    is Screen.Checkout -> "Potvrda"
-                },
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp
-            )
+            Column {
+                Text(
+                    text = when (screen) {
+                        is Screen.UserProfile -> "Moj Profil"
+                        is Screen.PackageList -> "SportZona"
+                        is Screen.PackageDetail -> "Detalji"
+                        is Screen.AddEditPackage -> if (screen.packageId == null) "Novi Paket" else "Izmeni Paket"
+                        is Screen.Cart -> "Moja Korpa"
+                        is Screen.Checkout -> "Plaćanje"
+                    },
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+                if (screen is Screen.PackageList) {
+                    Text(
+                        "Pronađi svoj idealan trening.",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
         },
         navigationIcon = {
             if (screen !is Screen.UserProfile && screen !is Screen.PackageList) {
@@ -151,7 +213,18 @@ fun SportZonaTopAppBar(viewModel: SportZonaViewModel) {
                 }
             } else if (screen is Screen.PackageList) {
                 IconButton(onClick = { viewModel.navigateTo(Screen.UserProfile) }) {
-                    Icon(Icons.Default.Person, contentDescription = "Profil")
+                    Surface(
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Person,
+                            contentDescription = "Profil",
+                            modifier = Modifier.padding(6.dp),
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
                 }
             }
         },
@@ -161,7 +234,10 @@ fun SportZonaTopAppBar(viewModel: SportZonaViewModel) {
                     BadgedBox(
                         badge = {
                             if (cartCount > 0) {
-                                Badge(containerColor = Color.Black, contentColor = Color.White) {
+                                Badge(
+                                    containerColor = MaterialTheme.colorScheme.primary,
+                                    contentColor = MaterialTheme.colorScheme.onPrimary
+                                ) {
                                     Text(cartCount.toString())
                                 }
                             }
@@ -172,16 +248,15 @@ fun SportZonaTopAppBar(viewModel: SportZonaViewModel) {
                 }
             }
         },
-        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-            containerColor = Color.White,
-            titleContentColor = Color.Black,
-            navigationIconContentColor = Color.Black,
-            actionIconContentColor = Color.Black
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            titleContentColor = MaterialTheme.colorScheme.onSurface,
+            navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+            actionIconContentColor = MaterialTheme.colorScheme.onSurface
         )
     )
 }
 
-// --- 1. USER PROFILE SCREEN ---
 @Composable
 fun UserProfileScreen(viewModel: SportZonaViewModel) {
     val user = viewModel.userProfile
@@ -193,109 +268,134 @@ fun UserProfileScreen(viewModel: SportZonaViewModel) {
 
     val isFormValid = firstName.isNotBlank() && lastName.isNotBlank() && email.isNotBlank() && street.isNotBlank() && city.isNotBlank()
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 24.dp)
+    ) {
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(16.dp),
+            modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(bottom = 90.dp),
+            contentPadding = PaddingValues(top = 24.dp, bottom = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
-                Icon(
-                    imageVector = Icons.Default.AccountCircle,
-                    contentDescription = null,
-                    modifier = Modifier.size(64.dp),
-                    tint = MaterialTheme.colorScheme.primary
-                )
-                Spacer(Modifier.height(8.dp))
+                Surface(
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    modifier = Modifier.size(80.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.AccountCircle,
+                        contentDescription = null,
+                        modifier = Modifier.padding(16.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+                Spacer(Modifier.height(16.dp))
                 Text(
-                    "Unesite vaše podatke za člansku kartu. Ovi podaci će se koristiti za dostavu i personalizaciju vašeg naloga.",
+                    "Dobrodošli u SportZona",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    "Unesite svoje podatke za izdavanje članske karte.",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.DarkGray,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(horizontal = 16.dp)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center
                 )
                 Spacer(Modifier.height(24.dp))
             }
 
             item {
-                OutlinedTextField(
+                SportTextField(
                     value = firstName,
                     onValueChange = { firstName = it },
-                    label = { Text("Ime") },
-                    leadingIcon = { Icon(Icons.Default.Person, null) },
-                    supportingText = { Text("Unesite vaše ime.") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    shape = RoundedCornerShape(0.dp)
+                    label = "Ime",
+                    icon = Icons.Default.Person
                 )
-                Spacer(Modifier.height(16.dp))
-                OutlinedTextField(
+            }
+            item {
+                SportTextField(
                     value = lastName,
                     onValueChange = { lastName = it },
-                    label = { Text("Prezime") },
-                    leadingIcon = { Icon(Icons.Default.Person, null) },
-                    supportingText = { Text("Unesite vaše prezime.") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    shape = RoundedCornerShape(0.dp)
+                    label = "Prezime",
+                    icon = Icons.Default.Person
                 )
-                Spacer(Modifier.height(16.dp))
-                OutlinedTextField(
+            }
+            item {
+                SportTextField(
                     value = email,
                     onValueChange = { email = it },
-                    label = { Text("E-mail") },
-                    leadingIcon = { Icon(Icons.Default.Email, null) },
-                    supportingText = { Text("Adresa na koju ćete primati obaveštenja.") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    shape = RoundedCornerShape(0.dp),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+                    label = "E-mail",
+                    icon = Icons.Default.Email,
+                    keyboardType = KeyboardType.Email
                 )
-                Spacer(Modifier.height(16.dp))
-                OutlinedTextField(
+            }
+            item {
+                SportTextField(
                     value = street,
                     onValueChange = { street = it },
-                    label = { Text("Ulica i broj") },
-                    leadingIcon = { Icon(Icons.Default.Home, null) },
-                    supportingText = { Text("Adresa za dostavu kartice.") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    shape = RoundedCornerShape(0.dp)
+                    label = "Ulica i broj",
+                    icon = Icons.Default.Home
                 )
-                Spacer(Modifier.height(16.dp))
-                OutlinedTextField(
+            }
+            item {
+                SportTextField(
                     value = city,
                     onValueChange = { city = it },
-                    label = { Text("Grad") },
-                    leadingIcon = { Icon(Icons.Default.LocationOn, null) },
-                    supportingText = { Text("Grad u kome ćete preuzeti karticu.") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    shape = RoundedCornerShape(0.dp)
+                    label = "Grad",
+                    icon = Icons.Default.LocationOn
                 )
             }
         }
 
         Surface(
-            modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth(),
-            border = BorderStroke(1.dp, Color.LightGray),
-            color = Color.White
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 24.dp)
+                .height(56.dp),
+            shape = RoundedCornerShape(12.dp),
+            color = MaterialTheme.colorScheme.primary,
+            tonalElevation = 0.dp
         ) {
             Button(
                 onClick = { if (isFormValid) viewModel.saveUserProfile(firstName, lastName, email, street, city) },
                 enabled = isFormValid,
-                modifier = Modifier.padding(16.dp).fillMaxWidth().height(48.dp),
-                shape = RoundedCornerShape(0.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                modifier = Modifier.fillMaxSize(),
+                shape = RoundedCornerShape(12.dp),
+                elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp, 0.dp)
             ) {
-                Text("NASTAVI", fontWeight = FontWeight.ExtraBold)
+                Text("SAČUVAJ I NASTAVI", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             }
         }
     }
 }
 
-// --- 2. PACKAGE LIST SCREEN ---
+@Composable
+fun SportTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    keyboardType: KeyboardType = KeyboardType.Text
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(label) },
+        leadingIcon = { Icon(icon, null, tint = MaterialTheme.colorScheme.primary) },
+        modifier = Modifier.fillMaxWidth(),
+        singleLine = true,
+        shape = RoundedCornerShape(12.dp),
+        keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = MaterialTheme.colorScheme.primary,
+            unfocusedBorderColor = MaterialTheme.colorScheme.outline
+        )
+    )
+}
+
 @Composable
 fun PackageListScreen(viewModel: SportZonaViewModel) {
     val packages = viewModel.packagesList
@@ -303,45 +403,34 @@ fun PackageListScreen(viewModel: SportZonaViewModel) {
 
     Box(modifier = Modifier.fillMaxSize()) {
         if (packages.isEmpty()) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(Icons.Default.Info, null, tint = Color.LightGray, modifier = Modifier.size(64.dp))
-                    Text("Nema dostupnih paketa", color = Color.Gray)
-                }
-            }
+            EmptyStateView(
+                icon = Icons.Default.Info,
+                message = "Trenutno nema dostupnih paketa.\nDodajte novi paket pomoću dugmeta ispod."
+            )
         } else {
             LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
-                contentPadding = PaddingValues(top = 16.dp, bottom = 40.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 item {
-                    Text(
-                        "Zdravo, ${viewModel.userProfile.firstName}!",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = Color.Black
-                    )
-                    Text(
-                        "Pregledajte dostupne sportske pakete u vašoj blizini.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Color.Gray
-                    )
+                    Column {
+                        Text(
+                            "Zdravo, ${viewModel.userProfile.firstName} 👋",
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                        Text(
+                            "Pogledajte dostupne sportske pakete.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
                 items(packages) { pkg ->
                     PackageListItem(pkg, userCity, viewModel)
                 }
             }
-        }
-
-        FloatingActionButton(
-            onClick = { viewModel.navigateTo(Screen.AddEditPackage(null)) },
-            modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp).padding(bottom = 24.dp),
-            containerColor = Color.Black,
-            contentColor = Color.White,
-            shape = CircleShape
-        ) {
-            Icon(Icons.Default.Add, contentDescription = "Dodaj")
         }
     }
 }
@@ -351,72 +440,110 @@ fun PackageListItem(pkg: SportPackage, userCity: String, viewModel: SportZonaVie
     val isLocal = userCity.isNotBlank() && pkg.cityAndCenter.lowercase().contains(userCity.lowercase())
 
     Card(
-        modifier = Modifier.fillMaxWidth().clickable { viewModel.navigateTo(Screen.PackageDetail(pkg.id)) },
-        elevation = CardDefaults.cardElevation(0.dp),
-        border = BorderStroke(1.dp, Color.LightGray),
-        shape = RoundedCornerShape(0.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { viewModel.navigateTo(Screen.PackageDetail(pkg.id)) },
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                pkg.name, 
-                fontWeight = FontWeight.ExtraBold, 
-                fontSize = 18.sp,
-                maxLines = 1, 
-                overflow = TextOverflow.Ellipsis,
-                color = Color.Black
+                pkg.name,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
             
-            Text(
-                if (isLocal) "${pkg.cityAndCenter} (u vašem gradu)" else pkg.cityAndCenter, 
-                fontSize = 12.sp, 
-                color = if (isLocal) MaterialTheme.colorScheme.primary else Color.Gray,
-                fontWeight = if (isLocal) FontWeight.Bold else FontWeight.Normal
-            )
+            Spacer(Modifier.height(4.dp))
             
-            Spacer(Modifier.height(12.dp))
-            
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                BadgeMinimal(text = "${pkg.availableSlots} slobodnih termina", color = Color.Black)
-                
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    Icons.Default.LocationOn,
+                    contentDescription = null,
+                    modifier = Modifier.size(14.dp),
+                    tint = if (isLocal) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(Modifier.width(4.dp))
                 Text(
-                    String.format("%.2f RSD", pkg.price), 
-                    fontWeight = FontWeight.ExtraBold, 
-                    color = Color.Black, 
-                    fontSize = 18.sp
+                    text = if (isLocal) "${pkg.cityAndCenter} (Lokalno)" else pkg.cityAndCenter,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (isLocal) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontWeight = if (isLocal) FontWeight.Bold else FontWeight.Normal
                 )
             }
             
+            Spacer(Modifier.height(4.dp))
+            
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    Icons.Default.ShoppingCart,
+                    contentDescription = null,
+                    modifier = Modifier.size(14.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(Modifier.width(4.dp))
+                Text(
+                    text = String.format("%.2f RSD", pkg.price),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
             Spacer(Modifier.height(16.dp))
-            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(
-                    onClick = { viewModel.navigateTo(Screen.PackageDetail(pkg.id)) }, 
-                    modifier = Modifier.height(40.dp).weight(1f), 
-                    shape = RoundedCornerShape(0.dp),
-                    border = BorderStroke(1.dp, Color.Black)
+
+            Row(
+                modifier = Modifier.fillMaxWidth().height(36.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxHeight(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("DETALJNIJE", fontSize = 12.sp, color = Color.Black, fontWeight = FontWeight.ExtraBold)
+                    Surface(
+                        color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.fillMaxHeight(),
+                        tonalElevation = 0.dp
+                    ) {
+                        Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(horizontal = 12.dp)) {
+                            Text(
+                                text = "${pkg.availableSlots} slobodnih mesta",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+
+                    FilledTonalIconButton(
+                        onClick = { viewModel.addExtraSlotsToPackage(pkg.id, 5) },
+                        modifier = Modifier.fillMaxHeight().aspectRatio(1f),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = IconButtonDefaults.filledTonalIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    ) {
+                        Text("+5", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
+                    }
                 }
-                OutlinedButton(
-                    onClick = { viewModel.addExtraSlotsToPackage(pkg.id, 5) }, 
-                    modifier = Modifier.height(40.dp), 
-                    shape = RoundedCornerShape(0.dp),
-                    border = BorderStroke(1.dp, Color.Black)
+
+                FilledTonalIconButton(
+                    onClick = { viewModel.navigateTo(Screen.AddEditPackage(pkg.id)) },
+                    modifier = Modifier.fillMaxHeight().aspectRatio(1f),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = IconButtonDefaults.filledTonalIconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
                 ) {
-                    Text("+5", fontSize = 12.sp, color = Color.Black, fontWeight = FontWeight.Bold)
-                }
-                Button(
-                    onClick = { viewModel.navigateTo(Screen.AddEditPackage(pkg.id)) }, 
-                    modifier = Modifier.size(40.dp), 
-                    contentPadding = PaddingValues(0.dp), 
-                    shape = CircleShape,
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
-                ) {
-                    Icon(Icons.Default.Edit, null, modifier = Modifier.size(18.dp))
+                    Icon(Icons.Default.Edit, contentDescription = "Izmeni", modifier = Modifier.size(18.dp))
                 }
             }
         }
@@ -424,94 +551,189 @@ fun PackageListItem(pkg: SportPackage, userCity: String, viewModel: SportZonaVie
 }
 
 @Composable
-fun BadgeMinimal(text: String, color: Color) {
-    Surface(
-        border = BorderStroke(1.dp, color),
-        shape = RoundedCornerShape(0.dp),
-        color = Color.White
-    ) {
-        Text(
-            text = text,
-            color = color,
-            fontSize = 10.sp,
-            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-            fontWeight = FontWeight.Bold
-        )
+fun EmptyStateView(icon: androidx.compose.ui.graphics.vector.ImageVector, message: String) {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(32.dp)) {
+            Icon(
+                icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.outline,
+                modifier = Modifier.size(64.dp)
+            )
+            Spacer(Modifier.height(16.dp))
+            Text(
+                message,
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }
 
-// --- 3. PACKAGE DETAIL SCREEN ---
 @Composable
 fun PackageDetailScreen(viewModel: SportZonaViewModel, packageId: Long) {
     val pkg = viewModel.selectedPackage ?: return
     var qty by remember { mutableStateOf(1) }
     val context = LocalContext.current
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(16.dp),
+            modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(bottom = 90.dp),
+            contentPadding = PaddingValues(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
-                Icon(
-                    imageVector = Icons.Default.Info,
-                    contentDescription = null,
-                    modifier = Modifier.size(64.dp),
-                    tint = MaterialTheme.colorScheme.primary
-                )
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    "Pregledajte detaljne informacije o izabranom sportskom paketu i rezervišite željeni broj mesta.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.DarkGray,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
-                Spacer(Modifier.height(24.dp))
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(160.dp),
+                    shape = RoundedCornerShape(24.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    tonalElevation = 0.dp
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            pkg.name,
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(horizontal = 24.dp)
+                        )
+                    }
+                }
             }
 
             item {
-                Text(pkg.name, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Start)
-                Text(String.format("%.2f RSD", pkg.price), fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = Color.Black, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Start)
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                    Icon(Icons.Default.LocationOn, null, tint = Color.Gray, modifier = Modifier.size(14.dp))
-                    Text(pkg.cityAndCenter, color = Color.Gray, fontSize = 14.sp)
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            String.format("%.2f RSD", pkg.price),
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Surface(
+                            color = MaterialTheme.colorScheme.secondaryContainer,
+                            shape = CircleShape,
+                            tonalElevation = 0.dp
+                        ) {
+                            Text(
+                                text = "${pkg.availableSlots} mesta",
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.LocationOn, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
+                        Spacer(Modifier.width(4.dp))
+                        Text(pkg.cityAndCenter, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
                 }
-                Spacer(Modifier.height(16.dp))
-                
-                DetailInfoCard("Kapacitet", "${pkg.availableSlots} slobodnih mesta", Icons.Default.Info)
-                DetailInfoCard("Standardni termin", "${pkg.standardDays} dana čekanja", Icons.Default.DateRange)
-                DetailInfoCard("Premium termin", "${pkg.premiumDays} dana čekanja", Icons.Default.Star)
-                
-                Spacer(Modifier.height(24.dp))
-                Text("Izaberite broj mesta:", fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
-                    IconButton(onClick = { if (qty > 1) qty-- }) { Icon(Icons.Default.KeyboardArrowLeft, null, modifier = Modifier.size(32.dp)) }
-                    Text(qty.toString(), fontWeight = FontWeight.Bold, fontSize = 24.sp, modifier = Modifier.padding(horizontal = 24.dp))
-                    IconButton(onClick = { if (qty < pkg.availableSlots) qty++ }) { Icon(Icons.Default.KeyboardArrowRight, null, modifier = Modifier.size(32.dp)) }
+            }
+
+            item {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    DetailInfoCard("Standardni termin", "${pkg.standardDays} dana", Icons.Default.DateRange)
+                    DetailInfoCard("Premium (Ekspres) termin", "${pkg.premiumDays} dana", Icons.Default.Star)
+                }
+            }
+
+            item {
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            }
+
+            item {
+                Column {
+                    Text(
+                        "Rezervišite mesta",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(Modifier.height(16.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        FilledTonalIconButton(
+                            onClick = { if (qty > 1) qty-- },
+                            modifier = Modifier.size(48.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = IconButtonDefaults.filledTonalIconButtonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                        ) {
+                            Icon(Icons.Default.KeyboardArrowLeft, null)
+                        }
+                        
+                        Text(
+                            qty.toString(),
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        
+                        FilledTonalIconButton(
+                            onClick = { if (qty < pkg.availableSlots) qty++ },
+                            modifier = Modifier.size(48.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = IconButtonDefaults.filledTonalIconButtonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                        ) {
+                            Icon(Icons.Default.KeyboardArrowRight, null)
+                        }
+                    }
                 }
             }
         }
 
-        Surface(modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth(), border = BorderStroke(1.dp, Color.LightGray), color = Color.White) {
-            Button(
-                onClick = { 
-                    viewModel.addPackageToCart(pkg.id, qty) { success ->
-                        if (success) {
-                            Toast.makeText(context, "Dodato u korpu", Toast.LENGTH_SHORT).show()
-                            viewModel.navigateTo(Screen.PackageList)
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            tonalElevation = 0.dp,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Ukupno za dodavanje:", style = MaterialTheme.typography.bodyLarge)
+                    Text(
+                        text = String.format("%.2f RSD", pkg.price * qty),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+                Spacer(Modifier.height(16.dp))
+                Button(
+                    onClick = {
+                        viewModel.addPackageToCart(pkg.id, qty) { success ->
+                            if (success) {
+                                Toast.makeText(context, "Dodato u korpu.", Toast.LENGTH_SHORT).show()
+                                viewModel.navigateTo(Screen.PackageList)
+                            }
                         }
-                    }
-                },
-                modifier = Modifier.padding(16.dp).fillMaxWidth().height(48.dp),
-                shape = RoundedCornerShape(0.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-            ) {
-                Icon(Icons.Default.ShoppingCart, null)
-                Spacer(Modifier.width(8.dp))
-                Text("DODAJ U KORPU", fontWeight = FontWeight.ExtraBold)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp, 0.dp)
+                ) {
+                    Icon(Icons.Default.ShoppingCart, null)
+                    Spacer(Modifier.width(8.dp))
+                    Text("DODAJ U KORPU", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                }
             }
         }
     }
@@ -520,24 +742,38 @@ fun PackageDetailScreen(viewModel: SportZonaViewModel, packageId: Long) {
 @Composable
 fun DetailInfoCard(label: String, value: String, icon: androidx.compose.ui.graphics.vector.ImageVector) {
     Card(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(0.dp),
-        border = BorderStroke(1.dp, Color.LightGray),
-        shape = RoundedCornerShape(0.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
-        Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(icon, null, tint = Color.Black, modifier = Modifier.size(20.dp))
-            Spacer(Modifier.width(12.dp))
+        Row(
+            Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Surface(
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier.size(40.dp),
+                tonalElevation = 0.dp
+            ) {
+                Icon(
+                    icon,
+                    null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(8.dp)
+                )
+            }
+            Spacer(Modifier.width(16.dp))
             Column {
-                Text(label, fontSize = 12.sp, color = Color.Gray)
-                Text(value, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(value, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
             }
         }
     }
 }
 
-// --- 4. ADD & EDIT PACKAGE SCREEN ---
 @Composable
 fun AddEditPackageScreen(viewModel: SportZonaViewModel, packageId: Long?) {
     val pkg = viewModel.selectedPackage
@@ -552,151 +788,94 @@ fun AddEditPackageScreen(viewModel: SportZonaViewModel, packageId: Long?) {
 
     LaunchedEffect(pkg) {
         if (packageId != null && pkg != null) {
-            name = pkg.name; price = pkg.price.toString(); slots = pkg.availableSlots.toString()
-            std = pkg.standardDays.toString(); prem = pkg.premiumDays.toString(); cityCenter = pkg.cityAndCenter
+            name = pkg.name
+            price = pkg.price.toString()
+            slots = pkg.availableSlots.toString()
+            std = pkg.standardDays.toString()
+            prem = pkg.premiumDays.toString()
+            cityCenter = pkg.cityAndCenter
         }
     }
 
     val isFormValid = name.isNotBlank() && price.isNotBlank() && slots.isNotBlank() && cityCenter.isNotBlank()
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(16.dp),
+            modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(bottom = 120.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            contentPadding = PaddingValues(16.dp)
         ) {
             item {
-                Icon(
-                    imageVector = if (packageId == null) Icons.Default.AddCircle else Icons.Default.Edit,
-                    contentDescription = null,
-                    modifier = Modifier.size(64.dp),
-                    tint = MaterialTheme.colorScheme.primary
+                Text(
+                    text = if (packageId == null) "Kreiraj novi paket" else "Izmeni postojeći paket",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    "Popunite sve informacije o sportskom paketu.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(Modifier.height(8.dp))
-                Text(
-                    "Unesite detalje sportskog paketa koji želite da dodate ili izmenite u sistemu SportZona.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.DarkGray,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
-                Spacer(Modifier.height(24.dp))
             }
+
+            item { SportTextField(name, { name = it }, "Naziv paketa", Icons.Default.Edit) }
+            item { SportTextField(price, { price = it }, "Cena (RSD)", Icons.Default.Info, KeyboardType.Number) }
+            item { SportTextField(slots, { slots = it }, "Broj slobodnih mesta", Icons.Default.CheckCircle, KeyboardType.Number) }
             
             item {
-                OutlinedTextField(
-                    value = name,
-                    onValueChange = { name = it },
-                    label = { Text("Naziv paketa") },
-                    leadingIcon = { Icon(Icons.Default.Edit, null) },
-                    supportingText = { Text("Primer: Premium Tenis 1h.") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    shape = RoundedCornerShape(0.dp)
-                )
-                Spacer(Modifier.height(16.dp))
-                OutlinedTextField(
-                    value = price,
-                    onValueChange = { price = it },
-                    label = { Text("Cena (RSD)") },
-                    leadingIcon = { Icon(Icons.Default.Info, null) },
-                    supportingText = { Text("Ukupna cena sa PDV-om.") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    shape = RoundedCornerShape(0.dp),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                )
-                Spacer(Modifier.height(16.dp))
-                OutlinedTextField(
-                    value = slots,
-                    onValueChange = { slots = it },
-                    label = { Text("Broj mesta") },
-                    leadingIcon = { Icon(Icons.Default.CheckCircle, null) },
-                    supportingText = { Text("Ukupan broj slobodnih mesta.") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    shape = RoundedCornerShape(0.dp),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                )
-                Spacer(Modifier.height(16.dp))
-                OutlinedTextField(
-                    value = std,
-                    onValueChange = { std = it },
-                    label = { Text("Standard dani") },
-                    leadingIcon = { Icon(Icons.Default.DateRange, null) },
-                    supportingText = { Text("Dani čekanja za standardnu obradu.") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    shape = RoundedCornerShape(0.dp),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                )
-                Spacer(Modifier.height(16.dp))
-                OutlinedTextField(
-                    value = prem,
-                    onValueChange = { prem = it },
-                    label = { Text("Premium dani") },
-                    leadingIcon = { Icon(Icons.Default.Star, null) },
-                    supportingText = { Text("Dani čekanja za ekspresnu obradu.") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    shape = RoundedCornerShape(0.dp),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                )
-                Spacer(Modifier.height(16.dp))
-                OutlinedTextField(
-                    value = cityCenter,
-                    onValueChange = { cityCenter = it },
-                    label = { Text("Grad i sportski centar") },
-                    leadingIcon = { Icon(Icons.Default.LocationOn, null) },
-                    supportingText = { Text("Lokacija gde se paket koristi.") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    shape = RoundedCornerShape(0.dp)
-                )
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Box(modifier = Modifier.weight(1f)) {
+                        SportTextField(std, { std = it }, "Standard (dani)", Icons.Default.DateRange, KeyboardType.Number)
+                    }
+                    Box(modifier = Modifier.weight(1f)) {
+                        SportTextField(prem, { prem = it }, "Premium (dani)", Icons.Default.Star, KeyboardType.Number)
+                    }
+                }
             }
+            
+            item { SportTextField(cityCenter, { cityCenter = it }, "Grad i sportski centar", Icons.Default.LocationOn) }
 
             if (packageId != null) {
                 item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        border = BorderStroke(1.dp, Color.LightGray),
-                        shape = RoundedCornerShape(0.dp)
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text("Dopisivanje slobodnih mesta", fontWeight = FontWeight.ExtraBold)
-                            Text("Brzo dodavanje novih slobodnih kapaciteta u ovaj paket.", fontSize = 12.sp, color = Color.Gray)
-                            Spacer(Modifier.height(16.dp))
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                OutlinedTextField(
-                                    value = extraSlotsInput,
-                                    onValueChange = { extraSlotsInput = it },
-                                    label = { Text("Broj") },
-                                    leadingIcon = { Icon(Icons.Default.Add, null) },
-                                    modifier = Modifier.weight(1f),
-                                    singleLine = true,
-                                    shape = RoundedCornerShape(0.dp),
-                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                }
+                item {
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text("Brzo dodavanje mesta", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Text("Dopišite slobodne termine na trenutni kapacitet.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Spacer(Modifier.height(12.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth().height(56.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            OutlinedTextField(
+                                value = extraSlotsInput,
+                                onValueChange = { extraSlotsInput = it },
+                                placeholder = { Text("Unesite broj novih mesta") },
+                                modifier = Modifier.weight(1f).fillMaxHeight(),
+                                singleLine = true,
+                                shape = RoundedCornerShape(12.dp),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
                                 )
-                                Button(
-                                    onClick = {
+                            )
+                            Button(
+                                onClick = {
                                         val extra = extraSlotsInput.toIntOrNull() ?: 0
                                         if (extra > 0) {
                                             viewModel.addExtraSlotsToPackage(packageId, extra)
                                             extraSlotsInput = ""
                                         }
                                     },
-                                    shape = RoundedCornerShape(0.dp),
-                                    modifier = Modifier.height(56.dp).offset(y = (-4).dp),
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
-                                ) {
-                                    Text("Dopiši", fontWeight = FontWeight.Bold)
-                                }
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier.fillMaxHeight(),
+                                elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp, 0.dp)
+                            ) {
+                                Text("Dopiši")
                             }
                         }
                     }
@@ -704,36 +883,62 @@ fun AddEditPackageScreen(viewModel: SportZonaViewModel, packageId: Long?) {
             }
         }
 
-        Surface(modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth(), border = BorderStroke(1.dp, Color.LightGray), color = Color.White) {
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            tonalElevation = 0.dp,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+        ) {
             Button(
                 onClick = {
                     if (isFormValid) {
-                        val p = price.toDoubleOrNull() ?: 0.0; val s = slots.toIntOrNull() ?: 0
-                        val st = std.toIntOrNull() ?: 0; val pr = prem.toIntOrNull() ?: 0
+                        val p = price.toDoubleOrNull() ?: 0.0
+                        val s = slots.toIntOrNull() ?: 0
+                        val st = std.toIntOrNull() ?: 0
+                        val pr = prem.toIntOrNull() ?: 0
                         if (packageId == null) viewModel.addPackage(name, p, s, st, pr, cityCenter)
                         else viewModel.updatePackage(packageId, name, p, s, st, pr, cityCenter)
                     }
                 },
                 enabled = isFormValid,
-                modifier = Modifier.padding(16.dp).fillMaxWidth().height(48.dp),
-                shape = RoundedCornerShape(0.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(12.dp),
+                elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp, 0.dp)
             ) {
-                Text("SAČUVAJ", fontWeight = FontWeight.ExtraBold)
+                Text("SAČUVAJ PROMENE", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             }
         }
     }
 }
 
-// --- 5. CART SCREEN ---
 @Composable
 fun CartScreen(viewModel: SportZonaViewModel) {
     val items = viewModel.cartItems
     if (items.isEmpty()) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(Icons.Default.ShoppingCart, null, tint = Color.LightGray, modifier = Modifier.size(64.dp))
-                Text("Vaša korpa je prazna", color = Color.Gray)
+        Column(modifier = Modifier.fillMaxSize()) {
+            Box(modifier = Modifier.weight(1f)) {
+                EmptyStateView(
+                    icon = Icons.Default.ShoppingCart,
+                    message = "Vaša korpa je prazna.\nPregledajte pakete i dodajte ih u korpu."
+                )
+            }
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                tonalElevation = 0.dp,
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+            ) {
+                Box(modifier = Modifier.padding(16.dp)) {
+                    Button(
+                        onClick = { viewModel.navigateTo(Screen.PackageList) },
+                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp, 0.dp)
+                    ) {
+                        Text("PREGLEDAJ PONUDU", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    }
+                }
             }
         }
         return
@@ -742,126 +947,200 @@ fun CartScreen(viewModel: SportZonaViewModel) {
     val basePrice = viewModel.getCartBasePrice()
     val waitingDays = viewModel.getCartWaitingDays()
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-            contentPadding = PaddingValues(bottom = 140.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(16.dp)
         ) {
             item {
-                Icon(
-                    imageVector = Icons.Default.ShoppingCart,
-                    contentDescription = null,
-                    modifier = Modifier.size(64.dp),
-                    tint = MaterialTheme.colorScheme.primary
+                Text(
+                    "Pregled rezervacija",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    "Proverite stavke pre potvrde porudžbine.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(Modifier.height(8.dp))
-                Text(
-                    "Pregledajte pakete koje ste rezervisali pre potvrde i konačnog plaćanja.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.DarkGray,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
-                Spacer(Modifier.height(24.dp))
             }
+
             items(items) { item ->
-                Card(elevation = CardDefaults.cardElevation(0.dp), border = BorderStroke(1.dp, Color.LightGray), shape = RoundedCornerShape(0.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
-                    Row(Modifier.padding(12.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                        Column(Modifier.weight(1f)) {
-                            Text(item.sportPackage.name, fontWeight = FontWeight.ExtraBold)
-                            Text("${item.cartItem.quantity} mesta x ${String.format("%.2f", item.sportPackage.price)} RSD", fontSize = 12.sp, color = Color.Gray)
-                            Text("Ukupno: ${String.format("%.2f RSD", item.sportPackage.price * item.cartItem.quantity)}", fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary)
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                    elevation = CardDefaults.cardElevation(0.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = item.sportPackage.name, 
+                                style = MaterialTheme.typography.titleMedium, 
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            Text(
+                                "${item.cartItem.quantity} x ${String.format("%.2f", item.sportPackage.price)} RSD",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                String.format("%.2f RSD", item.sportPackage.price * item.cartItem.quantity),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
                         }
-                        IconButton(onClick = { viewModel.removeCartItem(item.cartItem.id) }) { Icon(Icons.Default.Delete, null, tint = Color.Gray) }
+                        
+                        IconButton(
+                            onClick = { viewModel.removeCartItem(item.cartItem.id) },
+                            colors = IconButtonDefaults.iconButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                        ) {
+                            Icon(Icons.Default.Delete, contentDescription = "Ukloni")
+                        }
                     }
-                }
-            }
-            item {
-                Spacer(Modifier.height(16.dp))
-                HorizontalDivider(color = Color.LightGray)
-                Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("Privremena cena:", color = Color.Gray)
-                    Text(String.format("%.2f RSD", basePrice), fontWeight = FontWeight.Bold)
-                }
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("Dani čekanja:", color = Color.Gray)
-                    Text("$waitingDays dana", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                 }
             }
         }
 
-        Surface(modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth(), border = BorderStroke(1.dp, Color.LightGray), color = Color.White) {
-            Button(
-                onClick = { viewModel.navigateTo(Screen.Checkout) }, 
-                modifier = Modifier.padding(16.dp).fillMaxWidth().height(48.dp), 
-                shape = RoundedCornerShape(0.dp), 
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-            ) {
-                Text("NASTAVI", fontWeight = FontWeight.ExtraBold)
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            tonalElevation = 0.dp,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("Privremena cena:", style = MaterialTheme.typography.bodyLarge)
+                    Text(String.format("%.2f RSD", basePrice), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                }
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("Maksimalno čekanje:", style = MaterialTheme.typography.bodyLarge)
+                    Text("$waitingDays dana", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                }
+                Spacer(Modifier.height(16.dp))
+                Button(
+                    onClick = { viewModel.navigateTo(Screen.Checkout) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp, 0.dp)
+                ) {
+                    Text("NASTAVI NA POTVRDU", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                }
             }
         }
     }
 }
 
-// --- 6. CHECKOUT SCREEN ---
 @Composable
 fun CheckoutScreen(viewModel: SportZonaViewModel) {
-    Box(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(16.dp),
+            modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(bottom = 90.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            contentPadding = PaddingValues(16.dp)
         ) {
             item {
-                Icon(
-                    imageVector = Icons.Default.CheckCircle,
-                    contentDescription = null,
-                    modifier = Modifier.size(64.dp),
-                    tint = MaterialTheme.colorScheme.primary
+                Text(
+                    "Potvrda rezervacije",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    "Izaberite način izdavanja članske kartice.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(Modifier.height(8.dp))
-                Text(
-                    "Odaberite način na koji želite da vam se izda članska kartica i potvrdite vašu rezervaciju.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.DarkGray,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
-                Spacer(Modifier.height(24.dp))
             }
             
             item {
-                DeliveryOption(viewModel, DeliveryMethod.STANDARD_RECEPTION, "Standardno preuzimanje", "Na recepciji centra - besplatno")
-                DeliveryOption(viewModel, DeliveryMethod.DIGITAL, "Digitalno izdavanje (SMS/Email)", "Popust 10% na cenu")
-                DeliveryOption(viewModel, DeliveryMethod.PREMIUM_DELIVERY, "Premium dostava na adresu", "Doplata 20% (Welcome paket)")
-                
-                Spacer(Modifier.height(24.dp))
-                Card(elevation = CardDefaults.cardElevation(0.dp), border = BorderStroke(1.dp, Color.LightGray), shape = RoundedCornerShape(0.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
-                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("Ukupna cena:", fontWeight = FontWeight.Bold)
-                            Text(String.format("%.2f RSD", viewModel.getCartFinalPrice()), fontWeight = FontWeight.ExtraBold, color = Color.Black, fontSize = 20.sp)
-                        }
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("Vreme do termina:", fontWeight = FontWeight.Bold)
-                            Text("${viewModel.getCartWaitingDays()} dana", fontWeight = FontWeight.Bold)
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    DeliveryOption(viewModel, DeliveryMethod.STANDARD_RECEPTION, "Standardno preuzimanje", "Besplatno preuzimanje na recepciji sportskog centra.")
+                    DeliveryOption(viewModel, DeliveryMethod.DIGITAL, "Digitalno izdavanje", "Popust 10% - Digitalna kartica (SMS / E-mail).")
+                    DeliveryOption(viewModel, DeliveryMethod.PREMIUM_DELIVERY, "Premium dostava", "Doplata 20% - Fizička kartica + „welcome“ paket.")
+                }
+            }
+
+            if (viewModel.selectedDeliveryMethod == DeliveryMethod.PREMIUM_DELIVERY) {
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                        elevation = CardDefaults.cardElevation(0.dp),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+                    ) {
+                        Column {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { viewModel.differentAddressEnabled = !viewModel.differentAddressEnabled }
+                                    .padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Checkbox(
+                                    checked = viewModel.differentAddressEnabled,
+                                    onCheckedChange = { viewModel.differentAddressEnabled = it }
+                                )
+                                Spacer(Modifier.width(8.dp))
+                                Text("Dostavi na drugu adresu.", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
+                            }
+                            
+                            AnimatedVisibility(visible = viewModel.differentAddressEnabled) {
+                                Column(
+                                    verticalArrangement = Arrangement.spacedBy(12.dp), 
+                                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
+                                ) {
+                                    SportTextField(viewModel.alternateStreet, { viewModel.alternateStreet = it }, "Druga ulica i broj", Icons.Default.Home)
+                                    SportTextField(viewModel.alternateCity, { viewModel.alternateCity = it }, "Drugi grad", Icons.Default.LocationOn)
+                                }
+                            }
                         }
                     }
                 }
             }
         }
 
-        Surface(modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth(), border = BorderStroke(1.dp, Color.LightGray), color = Color.White) {
-            Button(
-                onClick = { viewModel.confirmOrder() }, 
-                modifier = Modifier.padding(16.dp).fillMaxWidth().height(48.dp), 
-                shape = RoundedCornerShape(0.dp), 
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-            ) {
-                Text("POTVRDI REZERVACIJU", fontWeight = FontWeight.ExtraBold)
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            tonalElevation = 0.dp,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("Konačna cena:", style = MaterialTheme.typography.bodyLarge)
+                    Text(
+                        String.format("%.2f RSD", viewModel.getCartFinalPrice()),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("Vreme do termina:", style = MaterialTheme.typography.bodyLarge)
+                    Text("${viewModel.getCartWaitingDays()} dana", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                }
+                Spacer(Modifier.height(16.dp))
+                Button(
+                    onClick = { viewModel.confirmOrder() },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp, 0.dp)
+                ) {
+                    Text("POTVRDI I REZERVIŠI", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                }
             }
         }
     }
@@ -869,19 +1148,39 @@ fun CheckoutScreen(viewModel: SportZonaViewModel) {
 
 @Composable
 fun DeliveryOption(viewModel: SportZonaViewModel, method: DeliveryMethod, label: String, sub: String) {
+    val isSelected = viewModel.selectedDeliveryMethod == method
     Card(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp).clickable { viewModel.selectedDeliveryMethod = method },
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { viewModel.selectedDeliveryMethod = method },
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f) else MaterialTheme.colorScheme.surface
+        ),
         elevation = CardDefaults.cardElevation(0.dp),
-        border = BorderStroke(1.dp, if (viewModel.selectedDeliveryMethod == method) Color.Black else Color.Gray.copy(alpha = 0.3f)),
-        shape = RoundedCornerShape(0.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
-        Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-            RadioButton(selected = viewModel.selectedDeliveryMethod == method, onClick = { viewModel.selectedDeliveryMethod = method })
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            RadioButton(selected = isSelected, onClick = { viewModel.selectedDeliveryMethod = method })
             Spacer(Modifier.width(8.dp))
             Column {
-                Text(label, fontWeight = FontWeight.ExtraBold, fontSize = 14.sp)
-                Text(sub, fontSize = 12.sp, color = Color.Gray)
+                Text(
+                    text = label, 
+                    style = MaterialTheme.typography.bodyLarge, 
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = sub, 
+                    style = MaterialTheme.typography.bodySmall, 
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
         }
     }

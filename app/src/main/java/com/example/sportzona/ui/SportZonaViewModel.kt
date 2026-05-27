@@ -32,35 +32,27 @@ enum class DeliveryMethod {
 class SportZonaViewModel(application: Application) : AndroidViewModel(application) {
     private val dbHelper = DatabaseHelper(application)
 
-    // Navigation State
     var currentScreen by mutableStateOf<Screen>(Screen.UserProfile)
         private set
 
-    // User Profile State
     var userProfile by mutableStateOf(UserProfile())
         private set
 
-    // Packages State
     var packagesList by mutableStateOf<List<SportPackage>>(emptyList())
         private set
 
-    // Cart State
     var cartItems by mutableStateOf<List<CartItemWithPackage>>(emptyList())
         private set
 
-    // Selected Package (for detail or edit)
     var selectedPackage by mutableStateOf<SportPackage?>(null)
         private set
 
-    // Alternate Delivery State
     var differentAddressEnabled by mutableStateOf(false)
     var alternateStreet by mutableStateOf("")
     var alternateCity by mutableStateOf("")
 
-    // Selected delivery method
     var selectedDeliveryMethod by mutableStateOf(DeliveryMethod.STANDARD_RECEPTION)
 
-    // Dialog state for order confirmation
     var showOrderConfirmationDialog by mutableStateOf(false)
     var orderDialogInfo by mutableStateOf<OrderDialogInfo?>(null)
 
@@ -82,7 +74,6 @@ class SportZonaViewModel(application: Application) : AndroidViewModel(applicatio
 
             if (user != null) {
                 userProfile = user
-                // If user already saved their profile, go straight to packages list
                 if (user.isValid && currentScreen is Screen.UserProfile) {
                     currentScreen = Screen.PackageList
                 }
@@ -113,7 +104,6 @@ class SportZonaViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
-    // --- USER PROFILE ACTIONS ---
     fun saveUserProfile(firstName: String, lastName: String, email: String, street: String, city: String) {
         viewModelScope.launch {
             val updatedUser = UserProfile(
@@ -131,7 +121,6 @@ class SportZonaViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
-    // --- SPORT PACKAGE ACTIONS ---
     fun addPackage(
         name: String,
         price: Double,
@@ -194,14 +183,14 @@ class SportZonaViewModel(application: Application) : AndroidViewModel(applicatio
                 }
             }
             loadData()
-            // Reload selected package if in detail screen
             if (currentScreen is Screen.PackageDetail && (currentScreen as Screen.PackageDetail).packageId == packageId) {
+                loadPackageDetail(packageId)
+            } else if (currentScreen is Screen.AddEditPackage && (currentScreen as Screen.AddEditPackage).packageId == packageId) {
                 loadPackageDetail(packageId)
             }
         }
     }
 
-    // --- CART ACTIONS ---
     fun addPackageToCart(packageId: Long, quantity: Int, onResult: (Boolean) -> Unit) {
         viewModelScope.launch {
             val success = withContext(Dispatchers.IO) {
@@ -235,44 +224,34 @@ class SportZonaViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
-    // --- CHECKOUT & CALCULATIONS ---
-
-    // Total base price
     fun getCartBasePrice(): Double {
         return cartItems.sumOf { it.cartItem.quantity * it.sportPackage.price }
     }
 
-    // Total price after delivery adjustments
     fun getCartFinalPrice(): Double {
         val base = getCartBasePrice()
         return when (selectedDeliveryMethod) {
             DeliveryMethod.STANDARD_RECEPTION -> base
-            DeliveryMethod.DIGITAL -> base * 0.9 // -10% discount
-            DeliveryMethod.PREMIUM_DELIVERY -> base * 1.2 // +20% fee
+            DeliveryMethod.DIGITAL -> base * 0.9
+            DeliveryMethod.PREMIUM_DELIVERY -> base * 1.2
         }
     }
 
-    // Total waiting days based on standard or premium schedule
     fun getCartWaitingDays(): Int {
         if (cartItems.isEmpty()) return 0
 
-        // Use premium schedule if delivery is premium, otherwise standard
         val isPremiumSchedule = selectedDeliveryMethod == DeliveryMethod.PREMIUM_DELIVERY
 
-        // Find max waiting days among all reserved packages
         val maxBaseDays = cartItems.maxOfOrNull {
             if (isPremiumSchedule) it.sportPackage.premiumDays else it.sportPackage.standardDays
         } ?: 0
 
-        // Check if any package is located in a city different from the user's city
         val userCity = userProfile.city.trim()
         val anyOutsideCity = cartItems.any { item ->
             val pkgCityAndCenter = item.sportPackage.cityAndCenter.lowercase()
-            // If the city field of the user is empty, we don't apply, otherwise verify if the package is in user's city
             userCity.isNotEmpty() && !pkgCityAndCenter.contains(userCity.lowercase())
         }
 
-        // Increment by 1 if there is a city mismatch
         return maxBaseDays + if (anyOutsideCity) 1 else 0
     }
 
@@ -305,8 +284,6 @@ class SportZonaViewModel(application: Application) : AndroidViewModel(applicatio
         orderDialogInfo = null
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                // Deduct reserved spots from packages available slots in the database!
-                // Wait! To make the app feel incredibly alive and functional, let's update package slots upon confirmation!
                 for (item in cartItems) {
                     val pkg = dbHelper.getPackageById(item.cartItem.packageId)
                     if (pkg != null) {
@@ -316,14 +293,12 @@ class SportZonaViewModel(application: Application) : AndroidViewModel(applicatio
                 }
                 dbHelper.clearCart()
             }
-            // Reset states
             differentAddressEnabled = false
             alternateStreet = ""
             alternateCity = ""
             selectedDeliveryMethod = DeliveryMethod.STANDARD_RECEPTION
             
             loadData()
-            // Navigate back to packages list
             currentScreen = Screen.PackageList
         }
     }
