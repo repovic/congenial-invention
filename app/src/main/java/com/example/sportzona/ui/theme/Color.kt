@@ -2,22 +2,15 @@ package com.example.sportzona.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Primary Colors
-val PrimaryBlue = Color(0xFF1A73E8)
-val DarkBlue = Color(0xFF0D47A1)
-val AccentOrange = Color(0xFFFF6D00)
+val BrandPrimary = Color(0xFF2E7D32)
+val BrandSecondary = Color(0xFFFF5722)
+val BrandAccent = Color(0xFF00796B)
 
-// Neutral Colors
-val BackgroundWhite = Color(0xFFFAFAFA)
-val SurfaceWhite = Color(0xFFFFFFFF)
-val TextDark = Color(0xFF121212)
-val TextGray = Color(0xFF757575)
-val DividerGray = Color(0xFFE0E0E0)
+val LightBg = Color(0xFFF1F8E9)
+val PureWhite = Color(0xFFFFFFFF)
+val DeepText = Color(0xFF1B5E20)
+val SubtitleText = Color(0xFF4E342E)
+val BorderLine = Color(0xFFC8E6C9)
 
-// Status Colors
-val SuccessGreen = Color(0xFF4CAF50)
-val ErrorRed = Color(0xFFD32F2F)
-
-// Gym/Sport Accents
-val GymBlack = Color(0xFF1B1B1B)
-val GymGray = Color(0xFF333333)
+val OkGreen = Color(0xFF388E3C)
+val FailRed = Color(0xFFD32F2F)

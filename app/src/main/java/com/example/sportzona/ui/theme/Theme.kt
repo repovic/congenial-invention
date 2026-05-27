@@ -5,32 +5,30 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-private val SportZonaColorScheme = lightColorScheme(
-    primary = PrimaryBlue,
+private val AppColorScheme = lightColorScheme(
+    primary = BrandPrimary,
     onPrimary = Color.White,
-    primaryContainer = Color(0xFFE8F0FE),
-    onPrimaryContainer = DarkBlue,
-    secondary = GymBlack,
+    primaryContainer = Color(0xFFDCEDC8),
+    onPrimaryContainer = BrandPrimary,
+    secondary = BrandSecondary,
     onSecondary = Color.White,
-    secondaryContainer = Color(0xFFEEEEEE),
-    onSecondaryContainer = GymBlack,
-    background = BackgroundWhite,
-    onBackground = TextDark,
-    surface = SurfaceWhite,
-    onSurface = TextDark,
-    surfaceVariant = Color(0xFFF1F3F4),
-    onSurfaceVariant = TextGray,
-    outline = DividerGray,
-    error = ErrorRed,
+    secondaryContainer = Color(0xFFFBE9E7),
+    onSecondaryContainer = BrandSecondary,
+    background = LightBg,
+    onBackground = DeepText,
+    surface = PureWhite,
+    onSurface = DeepText,
+    surfaceVariant = Color(0xFFE8F5E9),
+    onSurfaceVariant = SubtitleText,
+    outline = BorderLine,
+    error = FailRed,
     onError = Color.White
 )
 
 @Composable
-fun SportZonaTheme(
-    content: @Composable () -> Unit
-) {
+fun SportZonaTheme(content: @Composable () -> Unit) {
     MaterialTheme(
-        colorScheme = SportZonaColorScheme,
+        colorScheme = AppColorScheme,
         typography = Typography,
         content = content
     )
