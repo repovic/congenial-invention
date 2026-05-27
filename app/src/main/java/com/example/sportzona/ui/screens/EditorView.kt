@@ -51,7 +51,7 @@ fun EditorView(controller: AppStateController, id: Long?) {
                 ScreenHeader(
                     icon = if (id == null) Icons.Default.AddBox else Icons.Default.EditNote,
                     title = if (id == null) "Kreiraj novi paket" else "Izmeni postojeći paket",
-                    subtitle = "Popunite sve informacije o sportskom paketu."
+                    subtitle = "Ažurirajte ili kreirajte nove stavke u katalogu."
                 )
             }
 

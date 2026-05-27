@@ -29,7 +29,7 @@ fun CheckoutView(controller: AppStateController) {
                 ScreenHeader(
                     icon = Icons.Default.VerifiedUser,
                     title = "Potvrda rezervacije",
-                    subtitle = "Izaberite način izdavanja članske kartice."
+                    subtitle = "Podesite način isporuke vaše nove članske karte."
                 )
             }
             

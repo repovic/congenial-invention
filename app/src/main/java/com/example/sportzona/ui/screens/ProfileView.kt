@@ -41,7 +41,7 @@ fun ProfileView(controller: AppStateController) {
                 ScreenHeader(
                     icon = Icons.Default.AccountCircle,
                     title = "Dobrodošli u SportZona",
-                    subtitle = "Unesite svoje podatke za izdavanje članske karte."
+                    subtitle = "Vaši podaci su neophodni za kreiranje članstva."
                 )
             }
 

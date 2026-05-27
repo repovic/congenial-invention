@@ -45,7 +45,7 @@ fun CartView(controller: AppStateController) {
                 ScreenHeader(
                     icon = Icons.Default.ShoppingCartCheckout,
                     title = "Pregled rezervacija",
-                    subtitle = "Proverite stavke pre potvrde porudžbine."
+                    subtitle = "Pregledajte listu rezervacija pre slanja porudžbine."
                 )
             }
             items(items) { entry ->

@@ -100,7 +100,7 @@ fun ScreenHeader(
             textAlign = TextAlign.Center
         )
         Text(
-            text = if (subtitle.endsWith(".")) subtitle else "$subtitle.",
+            text = subtitle,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center

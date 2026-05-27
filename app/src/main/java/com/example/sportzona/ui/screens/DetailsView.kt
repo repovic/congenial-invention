@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.sportzona.ui.components.InfoHighlightCard
 import com.example.sportzona.ui.components.ScreenHeader
@@ -41,47 +42,45 @@ fun DetailsView(controller: AppStateController) {
                 ScreenHeader(
                     icon = Icons.Default.Info,
                     title = p.title,
-                    subtitle = "Detaljne informacije o sportskom paketu"
+                    subtitle = "Kompletan uvid u termine i kapacitete paketa."
                 )
             }
 
             item {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        text = String.format("%.2f RSD", p.cost),
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(Modifier.height(8.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.LocationOn, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
-                        Spacer(Modifier.width(4.dp))
-                        Text(
-                            text = if (isLocal) "${p.facilityInfo} (Lokalno)" else p.facilityInfo, 
-                            style = MaterialTheme.typography.bodyMedium, 
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontWeight = FontWeight.Normal
-                        )
-                    }
-                    Spacer(Modifier.height(4.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Groups, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
-                        Spacer(Modifier.width(4.dp))
-                        Text(
-                            text = "${p.capacity} slobodnih mesta",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontWeight = FontWeight.Normal
-                        )
-                    }
-                }
+                Text(
+                    text = String.format("%.2f RSD", p.cost),
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = MaterialTheme.colorScheme.primary,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp)
+                )
             }
 
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    InfoHighlightCard("Standardni termin", "${p.waitDaysStandard} dana", Icons.Default.DateRange)
-                    InfoHighlightCard("Premium (Ekspres) termin", "${p.waitDaysPremium} dana", Icons.Default.Star)
+                    InfoHighlightCard(
+                        desc = "Lokacija centra",
+                        valStr = if (isLocal) "${p.facilityInfo} (Lokalno)" else p.facilityInfo,
+                        glyph = Icons.Default.LocationOn
+                    )
+                    InfoHighlightCard(
+                        desc = "Dostupni kapacitet",
+                        valStr = "${p.capacity} slobodnih mesta",
+                        glyph = Icons.Default.Groups
+                    )
+                    InfoHighlightCard(
+                        desc = "Standardni termin",
+                        valStr = "${p.waitDaysStandard} dana",
+                        glyph = Icons.Default.DateRange
+                    )
+                    InfoHighlightCard(
+                        desc = "Premium (Ekspres) termin",
+                        valStr = "${p.waitDaysPremium} dana",
+                        glyph = Icons.Default.Star
+                    )
                 }
             }
 

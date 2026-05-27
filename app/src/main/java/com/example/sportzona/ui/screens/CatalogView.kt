@@ -32,7 +32,7 @@ fun CatalogView(controller: AppStateController) {
             if (items.isEmpty()) {
                 EmptyPlaceholder(Icons.Default.Info, "Trenutno nema dostupnih paketa.\nDodajte novi paket pomoću dugmeta ispod.")
             } else {
-                LazyColumn(mozemo li 
+                LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -41,7 +41,7 @@ fun CatalogView(controller: AppStateController) {
                         ScreenHeader(
                             icon = Icons.Default.SportsScore,
                             title = "Zdravo, ${controller.currentUser.name} 👋",
-                            subtitle = "Pogledajte dostupne sportske pakete."
+                            subtitle = "Pretražite najbolje ponude sportskih termina."
                         )
                     }
                     items(items) { p -> CatalogItem(p, userLoc, controller) }
